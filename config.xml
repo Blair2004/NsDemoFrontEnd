@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<module>
+    <namespace>NsDemoFrontEnd</namespace>
+    <version>1.0</version>
+    <author>Nexo Solutions LLC</author>
+    <name>Demo Frontend</name>
+    <description>provide frontend credentials for Nexo Demos</description>
+</module>
