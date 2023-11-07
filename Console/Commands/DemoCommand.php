@@ -2,6 +2,7 @@
 
 namespace Modules\NsDemoFrontEnd\Console\Commands;
 
+use App\Services\ResetService;
 use Illuminate\Console\Command;
 
 class DemoCommand extends Command
@@ -27,8 +28,18 @@ class DemoCommand extends Command
      */
     public function handle()
     {
+        /**
+         * @var ResetService
+         */
+        $resetService = app()->make( ResetService::class );
+
         switch( $this->argument( 'demo' ) ) {
             case 'gastro':
+                $resetService->handleCustom( [
+                    'mode'  =>  'gastro_demo',
+                    'with-procurements' =>  true,
+                    'with-sales'    =>  true,
+                ] );
                 break;
             case 'multistore':
                 break;
