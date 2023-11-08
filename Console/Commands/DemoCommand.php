@@ -38,6 +38,8 @@ class DemoCommand extends Command
                 'with-procurements' =>  true,
                 'with-sales'    =>  true,
             ] );
+
+            $this->info( 'Gastro demo is enabled' );
         }
 
         if ( $moduleService->getIfEnabled( 'NsGastro' ) === false && $moduleService->getIfEnabled( 'NsMultiStore' ) !== false ) {
@@ -52,6 +54,8 @@ class DemoCommand extends Command
             $lastStore  =   Store::orderBy( 'id', 'desc' )->first();
             ns()->store->setStore( $lastStore );
             $this->resetGroceryDemo();
+
+            $this->info( 'Multistore demo is enabled' );
         }
 
         if ( $moduleService->getIfEnabled( 'NsGastro' ) !== false && $moduleService->getIfEnabled( 'NsMultiStore' ) !== false ) {
@@ -66,6 +70,8 @@ class DemoCommand extends Command
             $lastStore  =   Store::orderBy( 'id', 'desc' )->first();
             ns()->store->setStore( $lastStore );
             $this->resetGroceryDemo();
+
+            $this->info( 'Multistore With Gastro is enabled' );
         }
 
         Artisan::call( 'optimize:clear' );
