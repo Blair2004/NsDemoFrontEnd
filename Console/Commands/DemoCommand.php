@@ -7,6 +7,7 @@ use App\Services\ModulesService;
 use App\Services\ResetService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Modules\NsMultiStore\Models\Store;
 
 class DemoCommand extends Command
@@ -32,6 +33,10 @@ class DemoCommand extends Command
      */
     public function handle( ModulesService $moduleService, ResetService $resetService )
     {
+        $admin  =   Role::namespace( Role::ADMIN )->users()->first();
+
+        Auth::login( $admin );
+
         if ( $moduleService->getIfEnabled( 'NsGastro' ) !== false && $moduleService->getIfEnabled( 'NsMultiStore' ) === false ) {
             $resetService->handleCustom( [
                 'mode'  =>  'gastro_demo',
