@@ -2,8 +2,12 @@
 
 namespace Modules\NsDemoFrontEnd\Console\Commands;
 
+use App\Models\Role;
+use App\Services\ModulesService;
 use App\Services\ResetService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
+use Modules\NsMultiStore\Models\Store;
 
 class DemoCommand extends Command
 {
@@ -12,7 +16,7 @@ class DemoCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'demo:reset {demo}';
+    protected $signature = 'ns:demo {demo}';
 
     /**
      * The console command description.
@@ -26,23 +30,80 @@ class DemoCommand extends Command
      *
      * @return mixed
      */
-    public function handle()
+    public function handle( ModulesService $moduleService, ResetService $resetService )
+    {
+        if ( $moduleService->getIfEnabled( 'NsGastro' ) !== false && $moduleService->getIfEnabled( 'NsMultiStore' ) === false ) {
+            $resetService->handleCustom( [
+                'mode'  =>  'gastro_demo',
+                'with-procurements' =>  true,
+                'with-sales'    =>  true,
+            ] );
+        }
+
+        if ( $moduleService->getIfEnabled( 'NsGastro' ) === false && $moduleService->getIfEnabled( 'NsMultiStore' ) !== false ) {
+            /**
+             * @var User
+             */
+            $user   =   Role::namespace( 'admin' )->users()->first();
+
+            Artisan::call( 'multistore:wipe --force' );
+            Artisan::call( 'multistore:create "Grocery Master" --user ' . $user->email . '--roles admin' );
+
+            $lastStore  =   Store::orderBy( 'id', 'desc' )->first();
+            ns()->store->setStore( $lastStore );
+            $this->resetGroceryDemo();
+        }
+
+        if ( $moduleService->getIfEnabled( 'NsGastro' ) !== false && $moduleService->getIfEnabled( 'NsMultiStore' ) !== false ) {
+            /**
+             * @var User
+             */
+            $user   =   Role::namespace( 'admin' )->users()->first();
+
+            Artisan::call( 'multistore:wipe --force' );
+            Artisan::call( 'multistore:create "Chef Master - Restaurant" --user ' . $user->email . '--roles admin --roles ' . Role::STORECASHIER );
+
+            $lastStore  =   Store::orderBy( 'id', 'desc' )->first();
+            ns()->store->setStore( $lastStore );
+            $this->resetGroceryDemo();
+        }
+
+        Artisan::call( 'optimize:clear' );
+    }
+
+    public function resetGroceryDemo()
     {
         /**
          * @var ResetService
          */
-        $resetService = app()->make( ResetService::class );
+        $resetService = app()->make(ResetService::class);
+        $resetService->softReset();
 
-        switch( $this->argument( 'demo' ) ) {
-            case 'gastro':
-                $resetService->handleCustom( [
-                    'mode'  =>  'gastro_demo',
-                    'with-procurements' =>  true,
-                    'with-sales'    =>  true,
-                ] );
-                break;
-            case 'multistore':
-                break;
-        }
+        /**
+         * @var RestaurantDemoService
+         */
+        $demoService = app()->make(DemoService::class);
+        $demoService->run([
+            'create_sales'          =>  true,
+            'create_procurements'   =>  true,
+        ]);
+    }
+
+    public function resetRestaurantDemo()
+    {
+        /**
+         * @var ResetService
+         */
+        $resetService = app()->make(ResetService::class);
+        $resetService->softReset();
+
+        /**
+         * @var RestaurantDemoService
+         */
+        $demoService = app()->make(RestaurantDemoService::class);
+        $demoService->run([
+            'create_sales'          =>  true,
+            'create_procurements'   =>  true,
+        ]);
     }
 }
