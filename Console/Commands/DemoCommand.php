@@ -16,7 +16,7 @@ class DemoCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'ns:demo {demo}';
+    protected $signature = 'ns:demo';
 
     /**
      * The console command description.
